@@ -1,15 +1,10 @@
-from reader.scrapers.base_scraper import BaseScraper
-from reader.scrapers.ft_scraper import FinancialTimesScraper
-import time
+from scrapers.base_scraper import BaseScraper
+from scrapers.ft_scraper import FinancialTimesScraper
 import pandas as pd
-import logging
-from datetime import datetime
 
 companies_list_file = "sources/companies_list.xlsx"
 report_file = 'reports/report.xlsx'
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger('my_logger')
 
 scrapers = [FinancialTimesScraper()]
 
@@ -29,16 +24,13 @@ def load_companies(file_path):
 def get_articles(queries, article_sources: [BaseScraper]):
     articles_list = []
     for source in article_sources:
-        class_name = source.__class__.__name__
-        starting_time = source.get_start_time()
-        logger.info("[{}] Scraping {}".format(starting_time, class_name))
-
+        source.get_logger().info('Started scraping')
         for query in queries:
-            logger.info("[{}] - Searching for {}".format(datetime.now(), query))
             articles_list.append(source.search(query))
             #time.sleep(2)
 
         source.close_driver()
+        source.get_logger().info('Scraping completed')
 
     return articles_list
 

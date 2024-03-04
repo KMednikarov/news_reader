@@ -1,10 +1,11 @@
-from .base_scraper import BaseScraper, new_driver_instance
-from reader.model.news_data import Article
-from reader.model.news_data import NewsData
+from .base_scraper import BaseScraper
+from model.news_data import Article
+from model.news_data import NewsData
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from datetime import datetime
+from util.logger import Log
 
 
 def scrape_data(driver):
@@ -25,15 +26,16 @@ def scrape_data(driver):
     return articles_list
 
 
-
-
 class FinancialTimesScraper(BaseScraper):
     cookies_accepted = False
 
     def __init__(self):
-        super().__init__("https://ft.com")
+        class_name = self.__class__.__name__
+        super().__init__("https://ft.com", Log(class_name))
 
     def search(self, query) -> NewsData:
+        super().search(query)
+
         driver = self.get_driver()
         search_url = f'{self.url}/search?q={query}'
         driver.get(search_url)
