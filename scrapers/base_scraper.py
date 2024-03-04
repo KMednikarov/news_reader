@@ -42,11 +42,9 @@ class BaseScraper:
 
     def fetch_html(self, url):
         try:
-            driver = self.get_driver().get(url)
-
-            return driver.page_source
+            return self.get_driver().get(url).page_source
         except rq.exceptions.RequestException as e:
-            print(f"Failed to fetch HTML: {e}")
+            self.get_logger().error(f"Failed to fetch HTML: {e}")
             return None
 
     def parse_response(self, html):
