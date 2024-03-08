@@ -3,19 +3,37 @@ from scrapers.ft_scraper import FinancialTimesScraper
 from scrapers.il_sole_scraper import IlSoleScraper
 from scrapers.scmp_scraper import SouthChinaMorningPostScraper
 import pandas as pd
+import json
 
+last_scrape_dates_file = "sources/previous_scrape_dates.json"
 companies_list_file = "sources/companies_list.xlsx"
 report_file = 'reports/report.xlsx'
 
-
-scrapers = [IlSoleScraper()]
+scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
 
 
 def main():
-    #companies = load_companies(companies_list_file)
-    companies = ['apple']
-    news_list = get_articles(companies, scrapers)
+    last_scrape_dates = get_previous_dates(last_scrape_dates_file)
+    companies = load_companies(companies_list_file)
+    news_list = get_articles(companies, scrapers, last_scrape_dates)
     save_results(news_list)
+
+
+def get_previous_dates(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        # If the file does not exist, create it and return an empty dictionary
+        with open(file_path, 'w') as file:
+            json.dump({}, file)
+        return {}
+
+
+def save_previous_dates(file_path, data):
+    out_file = open(file_path, "w")
+    json.dump(data, out_file, indent=4)
+    out_file.close()
 
 
 def load_companies(file_path):
@@ -24,16 +42,21 @@ def load_companies(file_path):
     return first_column_values
 
 
-def get_articles(queries, article_sources: [BaseScraper]):
+def get_articles(queries, article_sources: [BaseScraper], last_scrape_dates):
     articles_list = []
     for source in article_sources:
+        if source.__name__ not in last_scrape_dates:
+            last_scrape_dates[source.__name__] = {}
+        source = source(last_scrape_dates[source.__name__])
+
         source.get_logger().info('Started scraping')
         for query in queries:
             articles_list.append(source.search(query))
-            #time.sleep(2)
 
         source.close_driver()
         source.get_logger().info('Scraping completed')
+
+    save_previous_dates(last_scrape_dates_file, last_scrape_dates)
 
     return articles_list
 
