@@ -9,7 +9,7 @@ last_scrape_dates_file = "sources/previous_scrape_dates.json"
 companies_list_file = "sources/companies_list.xlsx"
 report_file = 'reports/report.xlsx'
 
-scrapers = [FinancialTimesScraper, SouthChinaMorningPostScraper]
+scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
 
 
 def main():

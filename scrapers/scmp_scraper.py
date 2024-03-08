@@ -103,7 +103,7 @@ class SouthChinaMorningPostScraper(BaseScraper):
         driver.get(search_url)
         self.personal_data_consent(driver)
 
-        [articles, latest_date] = scrape_data(driver, self.last_scraped_dates.get(query, datetime.max.strftime(DATE_FORMAT)))
+        [articles, latest_date] = scrape_data(driver, self.last_scraped_dates.get(query, datetime.min.strftime(DATE_FORMAT)))
         self.last_scraped_dates[query] = latest_date
 
         return NewsData(query, articles)

@@ -51,7 +51,7 @@ class FinancialTimesScraper(BaseScraper):
         driver.get(search_url)
         self.accept_cookies(driver)
 
-        [articles, earliest_date] = scrape_data(driver, self.last_scraped_dates.get(query, datetime.max.strftime(DATE_FORMAT)))
+        [articles, earliest_date] = scrape_data(driver, self.last_scraped_dates.get(query, datetime.min.strftime(DATE_FORMAT)))
         self.last_scraped_dates[query] = earliest_date
 
         return NewsData(query, articles)
