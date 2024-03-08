@@ -1,6 +1,7 @@
 from scrapers.base_scraper import BaseScraper
 from scrapers.ft_scraper import FinancialTimesScraper
 from scrapers.il_sole_scraper import IlSoleScraper
+from scrapers.scmp_scraper import SouthChinaMorningPostScraper
 import pandas as pd
 
 companies_list_file = "sources/companies_list.xlsx"
