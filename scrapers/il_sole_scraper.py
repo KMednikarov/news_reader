@@ -10,19 +10,23 @@ import time
 
 
 def scrape_data(driver):
-    articles = driver.find_elements(By.XPATH, '//*[@id="resultsListA"]/li')
+    articles = driver.find_elements(By.XPATH, '//*[@id="resultsListA"]/li/div/div[1]')
     articles_list = []
     for article in articles:
-        link = article.find_element(By.XPATH, '//h3/a')
+        if article.get_attribute('class') != 'aprev-main':
+            continue
+        link = article.find_element(By.CLASS_NAME, 'aprev-title').find_element(By.TAG_NAME,'a')
         try:
             link_url = link.get_attribute('href')
             title = link.get_attribute('text')
-            date_text = article.find_element(By.XPATH, '//time').get_attribute("datetime")
+            date_text = (article.find_element(By.CLASS_NAME,'meta')
+                         .find_element(By.TAG_NAME, 'time')
+                         .get_attribute('datetime'))
             date = datetime.strptime(date_text, '%d/%m/%Y')
             formatted_date = date.strftime('%Y-%m-%d')
             articles_list.append(Article(title, link_url, formatted_date))
         except Exception as e:
-            print(e)
+            #print(e)
             continue
     articles_list.sort(key=lambda x: x.date, reverse=True)
     return articles_list
