@@ -50,8 +50,8 @@ class IlSoleScraper(BaseScraper):
     cookies_accepted = False
 
     def __init__(self, last_scraped_dates):
-        class_name = self.__class__.__name__
-        super().__init__("https://www.ricerca24.ilsole24ore.com/", Log(class_name))
+        self.class_name = self.__class__.__name__
+        super().__init__("https://www.ricerca24.ilsole24ore.com/", Log(self.class_name))
         self.last_scraped_dates = last_scraped_dates
 
     def search(self, query) -> NewsData:
@@ -67,7 +67,7 @@ class IlSoleScraper(BaseScraper):
                                                 self.last_scraped_dates.get(query, datetime.min.strftime(DATE_FORMAT)))
         self.last_scraped_dates[query] = earliest_date
 
-        return NewsData(query, articles)
+        return NewsData(self.class_name, query, articles)
 
     def accept_cookies(self, driver):
         if self.cookies_accepted:
