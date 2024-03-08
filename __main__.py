@@ -3,6 +3,8 @@ from scrapers.ft_scraper import FinancialTimesScraper
 from scrapers.il_sole_scraper import IlSoleScraper
 from scrapers.scmp_scraper import SouthChinaMorningPostScraper
 import pandas as pd
+from openpyxl import Workbook
+from openpyxl import load_workbook
 import json
 
 last_scrape_dates_file = "sources/previous_scrape_dates.json"
@@ -14,7 +16,8 @@ scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
 
 def main():
     last_scrape_dates = get_previous_dates(last_scrape_dates_file)
-    companies = load_companies(companies_list_file)
+    #companies = load_companies(companies_list_file)
+    companies = ['apple','amazon','tesla']
     news_list = get_articles(companies, scrapers, last_scrape_dates)
     save_results(news_list)
 
@@ -65,11 +68,39 @@ def save_results(news_list):
     data = []
     for news in news_list:
         for article in news.articles:
-            news_data = {'Company': news.company, 'Title': article.title, 'Link': article.link, 'Date': article.date}
+            news_data = {'Company': news.company, 'Source': news.source, 'Title': article.title, 'Link': article.link, 'Date': article.date}
             data.append(news_data)
 
     df = pd.DataFrame(data)
-    df.to_excel(report_file, index=False)
+    try:
+        # Try loading the existing workbook
+        workbook = load_workbook(report_file)
+    except FileNotFoundError:
+        # If the file doesn't exist, create a new workbook
+        workbook = Workbook()
+
+        # Group data by company
+    grouped_data = df.groupby('Company')
+
+    # Iterate over each group (company) and write data to separate sheets
+    for company, group in grouped_data:
+        # Check if the sheet already exists
+        if company in workbook.sheetnames:
+            sheet = workbook[company]
+        else:
+            # If the sheet doesn't exist, create a new one
+            sheet = workbook.create_sheet(title=company)
+
+        # Write data to the sheet
+        if sheet.max_row == 1:  # Check if the header row is already present
+            header_row = ['Source','Title', 'Link', 'Date']
+            sheet.append(header_row)
+
+        for _, row in group.iterrows():
+            sheet.append([row['Source'],row['Title'], row['Link'], row['Date']])
+
+    # Save the workbook
+    workbook.save(report_file)
 
 
 main()

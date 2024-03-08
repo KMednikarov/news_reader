@@ -91,8 +91,8 @@ class SouthChinaMorningPostScraper(BaseScraper):
     data_consent_accepted = False
 
     def __init__(self, last_scraped_dates):
-        class_name = self.__class__.__name__
-        super().__init__("https://www.scmp.com", Log(class_name))
+        self.class_name = self.__class__.__name__
+        super().__init__("https://www.scmp.com", Log(self.class_name))
         self.last_scraped_dates = last_scraped_dates
 
     def search(self, query) -> NewsData:
@@ -106,7 +106,7 @@ class SouthChinaMorningPostScraper(BaseScraper):
         [articles, latest_date] = scrape_data(driver, self.last_scraped_dates.get(query, datetime.min.strftime(DATE_FORMAT)))
         self.last_scraped_dates[query] = latest_date
 
-        return NewsData(query, articles)
+        return NewsData(self.class_name, query, articles)
 
     def personal_data_consent(self, driver):
         if self.data_consent_accepted:

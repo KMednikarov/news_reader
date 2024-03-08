@@ -1,5 +1,6 @@
 class NewsData:
-    def __init__(self, company, articles):
+    def __init__(self, source, company, articles):
+        self.source = source
         self.company = company
         self.articles = articles
 
