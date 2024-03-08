@@ -5,8 +5,53 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from datetime import datetime
+from util.constants import DATE_FORMAT
 from util.logger import Log
+
 import time
+
+
+def scrape_data(driver, last_scrape_date):
+    latest_date = datetime.min.strftime(DATE_FORMAT)
+    try:
+        wait_loader(driver)
+
+        filter_results_by_last_7_days(driver)
+        wait_loader(driver)
+        time.sleep(3)
+
+        # scroll(driver)
+
+        articles = driver.find_elements(By.XPATH,
+                                        '//div[@data-qa="ArticleSearchResultList-List"]//div['
+                                        '@data-qa="ContentItemSearch-Container"]')
+    except Exception as e:
+        # print('Error: ', e)
+        return [], last_scrape_date
+
+    articles_list = []
+    for article in articles:
+        try:
+            date_text = article.find_element(By.XPATH, './/time[@data-qa="ContentActionBar-handleRenderDisplayDateTime'
+                                                       '-time"]').get_attribute("datetime")
+            date = datetime.fromisoformat(date_text[:-1]).strftime(DATE_FORMAT)
+            if date <= last_scrape_date:
+                continue
+            elif date >= latest_date:
+                latest_date = date
+
+            link = article.find_element(By.TAG_NAME, 'a')
+            link_url = link.get_attribute('href')
+            title = link.find_element(By.XPATH, './/span[@data-qa="ContentHeadline-Headline"]').text.strip()
+
+            articles_list.append(Article(title, link_url, date))
+        except Exception as e:
+            # print('Error: ', e)
+            continue
+
+    articles_list.sort(key=lambda x: x.date, reverse=True)
+
+    return articles_list, latest_date
 
 
 def filter_results_by_last_7_days(driver):
@@ -42,44 +87,13 @@ def scroll(driver):
     time.sleep(2)
 
 
-def scrape_data(driver):
-    try:
-        wait_loader(driver)
-
-        filter_results_by_last_7_days(driver)
-        wait_loader(driver)
-        time.sleep(3)
-
-        # scroll(driver)
-
-        articles = driver.find_elements(By.XPATH,
-                                        '//div[@data-qa="ArticleSearchResultList-List"]//div['
-                                        '@data-qa="ContentItemSearch-Container"]')
-    except:
-        return []
-
-    articles_list = []
-    for article in articles:
-        try:
-            link = article.find_element(By.TAG_NAME, 'a')
-            link_url = link.get_attribute('href')
-            title = link.find_element(By.XPATH, './/span[@data-qa="ContentHeadline-Headline"]').text.strip()
-            date_text = article.find_element(By.XPATH, './/time[@data-qa="ContentActionBar-handleRenderDisplayDateTime'
-                                                       '-time"]').get_attribute("datetime")
-            formatted_date = datetime.fromisoformat(date_text[:-1]).strftime('%Y-%m-%d')
-            articles_list.append(Article(title, link_url, formatted_date))
-        except:
-            continue
-    articles_list.sort(key=lambda x: x.date, reverse=True)
-    return articles_list
-
-
 class SouthChinaMorningPostScraper(BaseScraper):
     data_consent_accepted = False
 
-    def __init__(self):
+    def __init__(self, last_scraped_dates):
         class_name = self.__class__.__name__
         super().__init__("https://www.scmp.com", Log(class_name))
+        self.last_scraped_dates = last_scraped_dates
 
     def search(self, query) -> NewsData:
         super().search(query)
@@ -88,10 +102,11 @@ class SouthChinaMorningPostScraper(BaseScraper):
         search_url = f'{self.url}/search/{query}'
         driver.get(search_url)
         self.personal_data_consent(driver)
-        articles = scrape_data(driver)
-        news_data = NewsData(query, articles)
 
-        return news_data
+        [articles, latest_date] = scrape_data(driver, self.last_scraped_dates.get(query, datetime.max.strftime(DATE_FORMAT)))
+        self.last_scraped_dates[query] = latest_date
+
+        return NewsData(query, articles)
 
     def personal_data_consent(self, driver):
         if self.data_consent_accepted:
