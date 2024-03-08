@@ -1,13 +1,13 @@
 from scrapers.base_scraper import BaseScraper
 from scrapers.ft_scraper import FinancialTimesScraper
+from scrapers.scmp_scraper import SouthChinaMorningPostScraper
 import pandas as pd
 
 companies_list_file = "sources/companies_list.xlsx"
 report_file = 'reports/report.xlsx'
 
 
-scrapers = [FinancialTimesScraper()]
-
+scrapers = [FinancialTimesScraper(), SouthChinaMorningPostScraper()]
 
 def main():
     companies = load_companies(companies_list_file)
