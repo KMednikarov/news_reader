@@ -24,6 +24,9 @@ def main():
 
 
 def get_previous_dates(file_path):
+    if not os.path.exists('sources'):
+        os.makedirs('sources')
+
     try:
         with open(file_path, 'r') as file:
             return json.load(file)
