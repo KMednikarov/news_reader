@@ -51,6 +51,7 @@ def load_companies(file_path):
 
     df = pd.read_excel(file_path, engine='openpyxl')
     if df.empty:
+        input('No companies to scrape for! Please fill /sources/companies_list.xlsx !')
         raise Exception('No companies to scrape for! Please fill /sources/companies_list.xlsx')
 
     return df.iloc[:, 0].tolist()
@@ -77,16 +78,14 @@ def get_articles(queries, article_sources: [BaseScraper], last_scrape_dates):
 
 def save_results(news_list: [NewsData]):
     data = []
-    print(f'length of news_list: {len(news_list)}')
     for news in news_list:
-        print(f'number per news: {len(news.articles)}')
         for article in news.articles:
             news_data = {'Company': news.company, 'Source': news.source, 'Title': article.title, 'Link': article.link,
                          'Date': article.date}
             data.append(news_data)
 
     if len(data) == 0:
-        print('No new articles were found for these companies since last scrape!\nReport will not be created ...')
+        input('No new articles were found for these companies since last scrape!\nReport will not be created ...')
         return
 
     df = pd.DataFrame(data)
