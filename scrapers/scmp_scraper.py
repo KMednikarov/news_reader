@@ -16,11 +16,11 @@ def scrape_data(driver, last_scrape_date):
     try:
         wait_loader(driver)
 
-        filter_results_by_last_7_days(driver)
+        filter_results_by_last_days(driver,7)
         wait_loader(driver)
         time.sleep(3)
 
-        # scroll(driver)
+        scroll(driver)
 
         articles = driver.find_elements(By.XPATH,
                                         '//div[@data-qa="ArticleSearchResultList-List"]//div['
@@ -54,14 +54,15 @@ def scrape_data(driver, last_scrape_date):
     return articles_list, latest_date
 
 
-def filter_results_by_last_7_days(driver):
+def filter_results_by_last_days(driver, days):
+    show_article_last_days = '{} Days'.format(days)
     driver.find_element(By.XPATH,
                         '//span[@data-qa="DropdownMenu-Display" and contains(text(),"Date Range")]').click()
 
     WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, '//li[@role="menuitem" and contains(text(), "7 Days")]'))
+        EC.presence_of_element_located((By.XPATH, '//li[@role="menuitem" and contains(text(), "{}")]'.format(show_article_last_days)))
     )
-    driver.find_element(By.XPATH, '//li[@role="menuitem" and contains(text(), "7 Days")]').click()
+    driver.find_element(By.XPATH, '//li[@role="menuitem" and contains(text(), "{}")]'.format(show_article_last_days)).click()
 
 
 def wait_loader(driver):
@@ -73,12 +74,12 @@ def wait_loader(driver):
 
 def scroll(driver):
     prev_height = -1
-    max_scrolls = 100
+    max_scrolls = 50
     scroll_count = 0
 
     while scroll_count < max_scrolls:
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(1)  # give some time for new results to load
+        time.sleep(2)  # give some time for new results to load
         new_height = driver.execute_script("return document.body.scrollHeight")
         if new_height == prev_height:
             break

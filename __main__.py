@@ -8,19 +8,32 @@ from openpyxl import Workbook
 from datetime import datetime
 import json
 import os
+from util.logger import Log
 
 last_scrape_dates_file = "sources/previous_scrape_dates.json"
 companies_list_file = "sources/companies_list.xlsx"
 report_file = 'reports/report'
+log = Log('NewsReader')
 
 scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
 
 
 def main():
-    last_scrape_dates = get_previous_dates(last_scrape_dates_file)
-    companies = load_companies(companies_list_file)
-    news_list = get_articles(companies, scrapers, last_scrape_dates)
-    save_results(news_list)
+    log.info("----------------------------")
+    log.info("Launching News Reader")
+    log.info("----------------------------")
+    try:
+        last_scrape_dates = get_previous_dates(last_scrape_dates_file)
+        companies = load_companies(companies_list_file)
+        #companies = ['apple']
+        news_list = get_articles(companies, scrapers, last_scrape_dates)
+        save_results(news_list)
+
+        log.info("----------------------------")
+        log.info("Exitting News Reader")
+        log.info("----------------------------")
+    except Exception as e:
+        log.exception(e)
 
 
 def get_previous_dates(file_path):
@@ -85,7 +98,9 @@ def save_results(news_list: [NewsData]):
             data.append(news_data)
 
     if len(data) == 0:
-        input('No new articles were found for these companies since last scrape!\nReport will not be created ...')
+        warning_message = 'No new articles were found for these companies since last scrape!\nReport will not be created ...'
+        log.warning(warning_message)
+        #input(warning_message)
         return
 
     df = pd.DataFrame(data)
@@ -110,12 +125,15 @@ def save_results(news_list: [NewsData]):
             sheet.append([row['Source'], row['Title'], row['Link'], row['Date']])
 
     if not os.path.exists('reports'):
+        log.info("Report folder doesn't exist. Proceeding to create report folder.")
         os.makedirs('reports')
 
     if 'Sheet' in workbook.sheetnames:
         workbook.remove(workbook['Sheet'])
 
-    workbook.save(f'{report_file}@{datetime.now().strftime("%Y-%m-%d_%H-%M")}.xlsx')
+    workbook_name = f'{report_file}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    workbook.save(workbook_name)
+    log.info('News report generated - [{}]'.format(workbook_name))
 
 
 main()
