@@ -1,3 +1,5 @@
+import time
+
 from .base_scraper import BaseScraper
 from model.news_data import Article
 from model.news_data import NewsData
@@ -63,6 +65,7 @@ class FinancialTimesScraper(BaseScraper):
         WebDriverWait(driver, 5).until(
             EC.frame_to_be_available_and_switch_to_it((By.XPATH, '//*[@id="sp_message_iframe_1030615"]'))
         )
+        time.sleep(3)
         driver.find_element(By.XPATH, '//button[contains(text(),"Accept Cookies")]').click()  # cookies consent
         driver.switch_to.default_content()
 

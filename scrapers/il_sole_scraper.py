@@ -13,10 +13,10 @@ import time
 def scrape_data(driver, last_scrape_date):
     latest_date = datetime.min.strftime(DATE_FORMAT)
 
-    wait_to_show_result(driver)
-    time.sleep(7)
+    # wait_to_show_result(driver)
+    time.sleep(5)
 
-    articles = driver.find_elements(By.XPATH, './/div[@class="aprev aprev--fbtm  aprev--mid aprev--ilist"]')
+    articles = driver.find_elements(By.XPATH, './/div[@class="aprev-main"]')
     articles_list = []
     for article in articles:
         try:
@@ -30,11 +30,10 @@ def scrape_data(driver, last_scrape_date):
             elif date >= latest_date:
                 latest_date = date
 
-
             articles_list.append(Article(title, link_url, date))
 
         except Exception as e:
-            print(e)
+            #print(e)
             continue
     articles_list.sort(key=lambda x: x.date, reverse=True)
     return articles_list, latest_date
@@ -79,5 +78,3 @@ class IlSoleScraper(BaseScraper):
         )
         driver.find_element(By.XPATH, './/button[contains(text(), "Accetto")]').click()
         time.sleep(10)
-
-
