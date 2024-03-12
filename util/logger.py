@@ -1,4 +1,5 @@
 import logging
+from logging.handlers import TimedRotatingFileHandler
 import os
 import sys
 from datetime import datetime
@@ -9,7 +10,7 @@ if not os.path.exists('logs'):
 
 log_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
 
-file_handler = logging.FileHandler(log_name)
+file_handler = TimedRotatingFileHandler(log_name, when='D', interval=1, backupCount=0, encoding='utf-8', delay=False)
 file_handler.setFormatter(log_formatter)
 
 console_handler = logging.StreamHandler()
