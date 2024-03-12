@@ -98,9 +98,10 @@ def save_results(news_list: [NewsData]):
             data.append(news_data)
 
     if len(data) == 0:
-        warning_message = 'No new articles were found for these companies since last scrape!\nReport will not be created ...'
+        warning_message = ('No new articles were found for these companies since last scrape!\nReport will not be '
+                           'created ...')
         log.warning(warning_message)
-        #input(warning_message)
+        input('Press any key to continue...')
         return
 
     df = pd.DataFrame(data)
@@ -134,6 +135,7 @@ def save_results(news_list: [NewsData]):
     workbook_name = f'{report_file}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
     workbook.save(workbook_name)
     log.info('News report generated - [{}]'.format(workbook_name))
+    input('Press any key to continue...')
 
 
 main()
