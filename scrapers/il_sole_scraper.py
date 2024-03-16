@@ -23,8 +23,8 @@ def scrape_data(driver, last_scrape_date):
             link = article.find_element(By.CLASS_NAME, 'aprev-title').find_element(By.TAG_NAME, 'a')
             link_url = link.get_attribute('href')
             title = link.get_attribute('text')
-            date_text = article.find_element(By.XPATH, './/time[@class="meta-part time"]').get_attribute('datetime')
-            date = datetime.strptime(date_text, '%d/%m/%Y').strftime(DATE_FORMAT)
+            date_text = article.find_element(By.XPATH, './/time[contains(@class, "meta-part time")]').get_attribute('datetime')
+            date = datetime.strptime(date_text, '%Y-%m-%d').strftime(DATE_FORMAT)
             if date <= last_scrape_date:
                 continue
             elif date >= latest_date:
@@ -33,7 +33,7 @@ def scrape_data(driver, last_scrape_date):
             articles_list.append(Article(title, link_url, date))
 
         except Exception as e:
-            #print(e)
+            print(e)
             continue
     articles_list.sort(key=lambda x: x.date, reverse=True)
     return articles_list, latest_date

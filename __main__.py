@@ -25,7 +25,7 @@ def main():
     try:
         last_scrape_dates = get_previous_dates(last_scrape_dates_file)
         companies = load_companies(companies_list_file)
-        #companies = ['apple']
+        #companies = ['amazon','tesla']
         news_list = get_articles(companies, scrapers, last_scrape_dates)
         save_results(news_list)
 
