@@ -1,5 +1,7 @@
 import time
 
+from model.scraper_query import ScraperQuery
+from model.scraper_config import ScraperConfig
 from .base_scraper import BaseScraper
 from model.news_data import Article
 from model.news_data import NewsData
@@ -7,8 +9,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from datetime import datetime
+from datetime import date
 from util.constants import DATE_FORMAT
 from util.logger import Log
+import re
 
 
 def scrape_data(driver, last_scrape_date):
@@ -39,34 +43,17 @@ def scrape_data(driver, last_scrape_date):
 
 class FinancialTimesScraper(BaseScraper):
     cookies_accepted = False
+    config_path = 'config/ft_config.json'
 
-    def __init__(self, last_scraped_dates):
-        self.class_name = self.__class__.__name__
-        super().__init__("https://ft.com", Log(self.class_name))
-        self.last_scraped_dates = last_scraped_dates
+    def __init__(self):
+        self.config = ScraperConfig.from_json(self.config_path)
+        super().__init__(self.config, Log(self.config.scraper_name))
 
-    def search(self, query) -> NewsData:
-        super().search(query)
-
+    def get_pages_count(self):
         driver = self.get_driver()
-        search_url = f'{self.url}/search?q={query}'
-        driver.get(search_url)
-        self.accept_cookies(driver)
+        pages_text = driver.find_element(By.CLASS_NAME, 'search-pagination__page')
+        pages_count = re.search(r'Page \d+ of (\d+)', pages_text.text).group(1)
+        return pages_count
 
-        [articles, earliest_date] = scrape_data(driver, self.last_scraped_dates.get(query, datetime.min.strftime(DATE_FORMAT)))
-        self.last_scraped_dates[query] = earliest_date
-
-        return NewsData(self.class_name, query, articles)
-
-    def accept_cookies(self, driver):
-        if self.cookies_accepted:
-            return
-        self.cookies_accepted = True
-        WebDriverWait(driver, 5).until(
-            EC.frame_to_be_available_and_switch_to_it((By.XPATH, '//*[@id="sp_message_iframe_1030615"]'))
-        )
-        time.sleep(3)
-        driver.find_element(By.XPATH, '//button[contains(text(),"Accept Cookies")]').click()  # cookies consent
-        driver.switch_to.default_content()
-
-
+    def build_search_url(self, query: ScraperQuery):
+        return f'{self.config.base_url}/search?&q={query.keyword}&dateFrom={query.from_date}&contentType=article&page={query.page}'

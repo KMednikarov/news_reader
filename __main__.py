@@ -1,4 +1,5 @@
 from model.news_data import NewsData
+from model.scraper_query import ScraperQuery
 from scrapers.base_scraper import BaseScraper
 from scrapers.ft_scraper import FinancialTimesScraper
 from scrapers.il_sole_scraper import IlSoleScraper
@@ -9,13 +10,17 @@ from datetime import datetime
 import json
 import os
 from util.logger import Log
+from dateutil.relativedelta import relativedelta
+from datetime import datetime
+import util.constants as cons
 
-last_scrape_dates_file = "sources/previous_scrape_dates.json"
-companies_list_file = "sources/companies_list.xlsx"
-report_file = 'reports/report'
+last_scrape_dates_file = cons.last_scrape_dates_file_path
+companies_list_file = cons.companies_file_path
+report_file = cons.report_file_path
 log = Log('NewsReader')
 
-scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
+# scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
+scrapers = [FinancialTimesScraper()]
 
 
 def main():
@@ -24,13 +29,13 @@ def main():
     log.info("----------------------------")
     try:
         last_scrape_dates = get_previous_dates(last_scrape_dates_file)
-        companies = load_companies(companies_list_file)
-        #companies = ['amazon','tesla']
+        # companies = load_companies(companies_list_file)
+        companies = ['apple', 'amazon','tesla','google']
         news_list = get_articles(companies, scrapers, last_scrape_dates)
         save_results(news_list)
 
         log.info("----------------------------")
-        log.info("Exitting News Reader")
+        log.info("Exiting News Reader")
         log.info("----------------------------")
     except Exception as e:
         log.exception(e)
@@ -70,16 +75,33 @@ def load_companies(file_path):
     return df.iloc[:, 0].tolist()
 
 
-def get_articles(queries, article_sources: [BaseScraper], last_scrape_dates):
+def get_articles(companies, sources: [BaseScraper], last_scrape_dates):
     articles_list = []
-    for source in article_sources:
-        if source.__name__ not in last_scrape_dates:
-            last_scrape_dates[source.__name__] = {}
-        source = source(last_scrape_dates[source.__name__])
+    for source in sources:
+        source_name = source.get_name()
+        if source_name not in last_scrape_dates:
+            last_scrape_dates[source_name] = {}
 
         source.get_logger().info('Started scraping')
-        for query in queries:
-            articles_list.append(source.search(query))
+        for company in companies:
+            company_last_search_date = cons.MIN_DATE
+            from_date = (datetime.now() - relativedelta(months=cons.LAST_MONTHS)).strftime(cons.SHORT_DATE_FORMAT)
+            if company in last_scrape_dates[source_name]:
+                company_last_search_date = datetime.strptime(last_scrape_dates[source_name][company], cons.DATE_FORMAT)
+                from_date = (datetime
+                             .strptime(last_scrape_dates[source_name][company], cons.DATE_FORMAT)
+                             .strftime(cons.SHORT_DATE_FORMAT))
+
+            query = ScraperQuery(keyword=company
+                                 , from_date=from_date
+                                 , last_scraped_date=company_last_search_date)
+            news_data: NewsData
+            news_data = source.scrape(query)
+            if len(news_data.articles) <= 0:
+                continue
+            articles_list.append(news_data)
+            last_scrape_dates[source_name][company] = news_data.articles[0].date if len(
+                news_data.articles) > 0 else None
 
         source.close_driver()
         source.get_logger().info('Scraping completed')
