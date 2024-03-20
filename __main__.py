@@ -1,18 +1,18 @@
+import json
+import os
+from datetime import datetime
+
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+from openpyxl import Workbook
+
+import util.constants as cons
 from model.news_data import NewsData
 from model.scraper_query import ScraperQuery
 from scrapers.base_scraper import BaseScraper
 from scrapers.ft_scraper import FinancialTimesScraper
 from scrapers.il_sole_scraper import IlSoleScraper
-from scrapers.scmp_scraper import SouthChinaMorningPostScraper
-import pandas as pd
-from openpyxl import Workbook
-from datetime import datetime
-import json
-import os
 from util.logger import Log
-from dateutil.relativedelta import relativedelta
-from datetime import datetime
-import util.constants as cons
 
 last_scrape_dates_file = cons.last_scrape_dates_file_path
 companies_list_file = cons.companies_file_path
@@ -20,7 +20,7 @@ report_file = cons.report_file_path
 log = Log('NewsReader')
 
 # scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
-scrapers = [FinancialTimesScraper()]
+scrapers = [FinancialTimesScraper(), IlSoleScraper()]
 
 
 def main():
@@ -29,8 +29,8 @@ def main():
     log.info("----------------------------")
     try:
         last_scrape_dates = get_previous_dates(last_scrape_dates_file)
-        # companies = load_companies(companies_list_file)
-        companies = ['apple', 'amazon','tesla','google']
+        companies = load_companies(companies_list_file)
+        # companies = ['apple']
         news_list = get_articles(companies, scrapers, last_scrape_dates)
         save_results(news_list)
 
@@ -39,40 +39,6 @@ def main():
         log.info("----------------------------")
     except Exception as e:
         log.exception(e)
-
-
-def get_previous_dates(file_path):
-    if not os.path.exists('sources'):
-        os.makedirs('sources')
-
-    try:
-        with open(file_path, 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        # If the file does not exist, create it and return an empty dictionary
-        with open(file_path, 'w') as file:
-            json.dump({}, file)
-        return {}
-
-
-def save_previous_dates(file_path, data):
-    out_file = open(file_path, "w")
-    json.dump(data, out_file, indent=4)
-    out_file.close()
-
-
-def load_companies(file_path):
-    if not os.path.exists(file_path):
-        data = {'Companies list': []}
-        df = pd.DataFrame(data)
-        df.to_excel(file_path, index=False)
-
-    df = pd.read_excel(file_path, engine='openpyxl')
-    if df.empty:
-        input('No companies to scrape for! Please fill /sources/companies_list.xlsx !')
-        raise Exception('No companies to scrape for! Please fill /sources/companies_list.xlsx')
-
-    return df.iloc[:, 0].tolist()
 
 
 def get_articles(companies, sources: [BaseScraper], last_scrape_dates):
@@ -109,6 +75,40 @@ def get_articles(companies, sources: [BaseScraper], last_scrape_dates):
     save_previous_dates(last_scrape_dates_file, last_scrape_dates)
 
     return articles_list
+
+
+def get_previous_dates(file_path):
+    if not os.path.exists('sources'):
+        os.makedirs('sources')
+
+    try:
+        with open(file_path, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        # If the file does not exist, create it and return an empty dictionary
+        with open(file_path, 'w') as file:
+            json.dump({}, file)
+        return {}
+
+
+def save_previous_dates(file_path, data):
+    out_file = open(file_path, "w")
+    json.dump(data, out_file, indent=4)
+    out_file.close()
+
+
+def load_companies(file_path):
+    if not os.path.exists(file_path):
+        data = {'Companies list': []}
+        df = pd.DataFrame(data)
+        df.to_excel(file_path, index=False)
+
+    df = pd.read_excel(file_path, engine='openpyxl')
+    if df.empty:
+        input('No companies to scrape for! Please fill /sources/companies_list.xlsx !')
+        raise Exception('No companies to scrape for! Please fill /sources/companies_list.xlsx')
+
+    return df.iloc[:, 0].tolist()
 
 
 def save_results(news_list: [NewsData]):

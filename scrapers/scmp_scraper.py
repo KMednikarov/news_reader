@@ -1,14 +1,16 @@
-from .base_scraper import BaseScraper
+import time
+from datetime import datetime
+
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+import util.constants as cons
 from model.news_data import Article
 from model.news_data import NewsData
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from datetime import datetime
 from util.constants import DATE_FORMAT
 from util.logger import Log
-
-import time
+from .base_scraper import BaseScraper
 
 
 def scrape_data(driver, last_scrape_date):
@@ -18,7 +20,7 @@ def scrape_data(driver, last_scrape_date):
 
         filter_results_by_last_days(driver,7)
         wait_loader(driver)
-        time.sleep(3)
+        time.sleep(cons.ROBO_WAIT_TIME)
 
         scroll(driver)
 

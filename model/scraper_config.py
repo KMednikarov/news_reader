@@ -11,7 +11,8 @@ class ScraperConfig:
                  article_main,
                  article_header,
                  article_date,
-                 article_date_format):
+                 article_date_format,
+                 pages_text):
         self.scraper_name = scraper_name
         self.base_url = base_url
         self.search_url = search_url
@@ -22,6 +23,7 @@ class ScraperConfig:
         self.article_header = article_header
         self.article_date = article_date
         self.article_date_format = article_date_format
+        self.pages_text = pages_text
 
     @classmethod
     def from_json(cls, filename):
