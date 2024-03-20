@@ -1,0 +1,14 @@
+{
+  "scraper_name":"IlSole24Ore",
+  "base_url": "https://www.ricerca24.ilsole24ore.com",
+  "search_url": "?cmd=static&chId=30&path=/search/search_engine.jsp&field=Titolo|Testo&orderBy=score+desc&chId=30&disable_user_rqq=false&keyWords={}&pageNumber=&pageSize=&fromDate={}&toDate=&filter=all",
+  "data_consent_window": ".//button[contains(text(), \"Accetto\")]",
+  "data_consent_switch_to_iframe": "False",
+  "data_consent_accept_btn": ".//button[contains(text(), \"Accetto\")]",
+  "article_main": ".//ol[contains(@class, 'list-lined')]//div[@class='aprev-main']",
+  "article_header": ".//h3[contains(@class,'aprev-title')]",
+  "article_date": ".//time[contains(@class, 'meta-part time')]",
+  "article_date_format": "%Y-%m-%d",
+  "pages_text": ".//nav[contains(@class,'pager')]//li[last()-1]"
+}
+
