@@ -1,0 +1,14 @@
+{
+  "scraper_name":"SouthChinaMorningPost",
+  "base_url": "https://www.scmp.com",
+  "search_url": "/search/{}",
+  "data_consent_window": ".//*[@class='fc-dialog-container']",
+  "data_consent_switch_to_iframe": "False",
+  "data_consent_accept_btn": ".//p[contains(text(),\"Consent\")]",
+  "article_main": ".//div[@data-qa='ArticleSearchResultList-List']//div[@data-qa='ContentItemSearch-Container']",
+  "article_header": "",
+  "article_date": ".//time[@data-qa=ContentActionBar-handleRenderDisplayDateTime-time]'",
+  "article_date_format": "%Y-%m-%dT%H:%M:%S%z",
+  "pages_text": ""
+}
+

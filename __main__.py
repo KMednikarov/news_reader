@@ -12,6 +12,7 @@ from model.scraper_query import ScraperQuery
 from scrapers.base_scraper import BaseScraper
 from scrapers.ft_scraper import FinancialTimesScraper
 from scrapers.il_sole_scraper import IlSoleScraper
+from scrapers.scmp_scraper import SouthChinaMorningPostScraper
 from util.logger import Log
 
 last_scrape_dates_file = cons.last_scrape_dates_file_path
@@ -19,8 +20,8 @@ companies_list_file = cons.companies_file_path
 report_file = cons.report_file_path
 log = Log('NewsReader')
 
-# scrapers = [IlSoleScraper, FinancialTimesScraper, SouthChinaMorningPostScraper]
-scrapers = [FinancialTimesScraper(), IlSoleScraper()]
+scrapers = [IlSoleScraper(), FinancialTimesScraper(), SouthChinaMorningPostScraper()]
+# scrapers = [SouthChinaMorningPostScraper()]
 
 
 def main():
@@ -30,7 +31,7 @@ def main():
     try:
         last_scrape_dates = get_previous_dates(last_scrape_dates_file)
         companies = load_companies(companies_list_file)
-        # companies = ['apple']
+        # companies = ['apple','amazon']
         news_list = get_articles(companies, scrapers, last_scrape_dates)
         save_results(news_list)
 

@@ -5,11 +5,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from .base_scraper import BaseScraper
 from model.scraper_config import ScraperConfig
 from model.scraper_query import ScraperQuery
 from util.logger import Log
 import util.constants as cons
-from .base_scraper import BaseScraper
 
 
 class FinancialTimesScraper(BaseScraper):

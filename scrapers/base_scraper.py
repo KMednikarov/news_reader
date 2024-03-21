@@ -1,16 +1,16 @@
 import time
 from datetime import datetime
 
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
 from model.news_data import Article, NewsData
 from model.scraper_query import ScraperQuery
 from model.scraper_config import ScraperConfig
 from util.logger import Log
 import util.constants as cons
-
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 
 
 def new_driver_instance():
@@ -30,7 +30,6 @@ def new_driver_instance():
 class BaseScraper:
     driver = None
     cookies_accepted = False
-    data_consent_wait_time = 30
 
     def __init__(self, config: ScraperConfig, logger: Log):
         self.config = config
@@ -55,10 +54,12 @@ class BaseScraper:
         self.personal_data_consent(self.config.data_consent_window
                                    , self.config.data_consent_accept_btn
                                    , self.config.data_consent_switch_to_iframe)
+
         pages_count = self.get_pages_count()
         articles = self.loop_pages_for_articles(pages_count, query)
         articles = sorted(articles,
                           key=lambda x: x.date, reverse=True)
+
         return NewsData(self.config.scraper_name, query.keyword, articles)
 
     def get_pages_count(self):
@@ -96,9 +97,6 @@ class BaseScraper:
 
         return articles_list
 
-    def search(self, query):
-        self.logger.info(" - Searching for {}".format(query))
-
     def load_webpage(self, query):
         search_url = self.build_search_url(query)
         self.get_driver().get(search_url)
@@ -109,11 +107,11 @@ class BaseScraper:
         self.cookies_accepted = True
         driver = self.get_driver()
         if switch_to_iframe == 'True':
-            WebDriverWait(driver, self.data_consent_wait_time).until(
+            WebDriverWait(driver, cons.WAIT_FOR_ELEMENT_PRESENCE).until(
                 EC.frame_to_be_available_and_switch_to_it((By.XPATH, consent_window_xpath))
             )
         else:
-            WebDriverWait(driver, self.data_consent_wait_time).until(
+            WebDriverWait(driver, cons.WAIT_FOR_ELEMENT_PRESENCE).until(
                 EC.presence_of_element_located((By.XPATH, consent_window_xpath))
             )
         time.sleep(cons.ROBO_WAIT_TIME)
