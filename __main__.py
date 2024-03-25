@@ -1,5 +1,7 @@
 import json
 import os
+from os import path
+import sys
 from datetime import datetime
 
 import pandas as pd
@@ -20,7 +22,9 @@ companies_list_file = cons.companies_file_path
 report_file = cons.report_file_path
 log = Log('NewsReader')
 
-scrapers = [IlSoleScraper(), FinancialTimesScraper(), SouthChinaMorningPostScraper()]
+scrapers = [FinancialTimesScraper(), IlSoleScraper(), SouthChinaMorningPostScraper()]
+
+
 # scrapers = [SouthChinaMorningPostScraper()]
 
 
@@ -29,9 +33,10 @@ def main():
     log.info("Launching News Reader")
     log.info("----------------------------")
     try:
+        check_sources_exist()
         last_scrape_dates = get_previous_dates(last_scrape_dates_file)
         companies = load_companies(companies_list_file)
-        # companies = ['apple','amazon']
+        # companies = ['apple']
         news_list = get_articles(companies, scrapers, last_scrape_dates)
         save_results(news_list)
 
@@ -78,10 +83,12 @@ def get_articles(companies, sources: [BaseScraper], last_scrape_dates):
     return articles_list
 
 
-def get_previous_dates(file_path):
-    if not os.path.exists('sources'):
-        os.makedirs('sources')
+def check_sources_exist():
+    if not os.path.exists(cons.sources_dir):
+        os.makedirs(cons.sources_dir)
 
+
+def get_previous_dates(file_path):
     try:
         with open(file_path, 'r') as file:
             return json.load(file)
@@ -107,6 +114,7 @@ def load_companies(file_path):
     df = pd.read_excel(file_path, engine='openpyxl')
     if df.empty:
         input('No companies to scrape for! Please fill /sources/companies_list.xlsx !')
+        log.info('File created at {}'.format(file_path))
         raise Exception('No companies to scrape for! Please fill /sources/companies_list.xlsx')
 
     return df.iloc[:, 0].tolist()
@@ -148,14 +156,14 @@ def save_results(news_list: [NewsData]):
         for _, row in group.iterrows():
             sheet.append([row['Source'], row['Title'], row['Link'], row['Date']])
 
-    if not os.path.exists('reports'):
+    if not os.path.exists(report_file):
         log.info("Report folder doesn't exist. Proceeding to create report folder.")
-        os.makedirs('reports')
+        os.makedirs(report_file)
 
     if 'Sheet' in workbook.sheetnames:
         workbook.remove(workbook['Sheet'])
 
-    workbook_name = f'{report_file}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
+    workbook_name = f'{report_file}/report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx'
     workbook.save(workbook_name)
     log.info('News report generated - [{}]'.format(workbook_name))
     input('Press any key to continue...')
