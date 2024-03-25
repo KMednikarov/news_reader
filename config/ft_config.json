@@ -2,7 +2,7 @@
   "scraper_name":"FinancialTimes",
   "base_url": "https://ft.com",
   "search_url": "/search?&q={}&dateFrom={}&contentType=article&page={}",
-  "data_consent_window": "//*[@id='sp_message_iframe_1030615']",
+  "data_consent_window": "//*[contains(@id, 'sp_message_iframe')]",
   "data_consent_switch_to_iframe": "True",
   "data_consent_accept_btn": "//button[contains(text(),'Accept Cookies')]",
   "article_main": ".//div[contains(@class,'o-teaser__content')]",

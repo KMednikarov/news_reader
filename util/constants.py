@@ -1,3 +1,14 @@
+import os
+import sys
+
+def get_current_directory():
+    if getattr(sys, 'frozen', False):
+        # Running in a PyInstaller bundle
+        return os.path.dirname(sys.executable)
+    else:
+        # Running as a script
+        return os.getcwd()
+
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 SHORT_DATE_FORMAT = '%Y-%m-%d'
 MAX_DATE = '9999-12-31 23:59:59'
@@ -7,6 +18,10 @@ WAIT_FOR_ELEMENT_PRESENCE = 30
 ROBO_WAIT_TIME = 3
 SEVEN_DAYS = 7
 SIXTY_DAYS = 60
-report_file_path = 'reports/report'
-companies_file_path = 'sources/companies_list.xlsx'
-last_scrape_dates_file_path = 'sources/previous_scrape_dates.json'
+current_directory = get_current_directory()
+report_file_path = current_directory + '/reports'
+sources_dir = current_directory + "/sources"
+companies_file_path = current_directory + '/sources/companies_list.xlsx'
+last_scrape_dates_file_path = current_directory + '/sources/previous_scrape_dates.json'
+
+

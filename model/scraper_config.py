@@ -1,4 +1,17 @@
+import os
+import sys
 import json
+
+
+def get_path(filename):
+    if getattr(sys, 'frozen', False):
+        # Running in a PyInstaller bundle
+        script_dir = sys._MEIPASS
+    else:
+        # Running as a script
+        script_dir = os.path.dirname(os.path.abspath('__main__'))
+
+    return os.path.join(script_dir, filename)
 
 
 class ScraperConfig:
@@ -27,6 +40,7 @@ class ScraperConfig:
 
     @classmethod
     def from_json(cls, filename):
-        with open(filename, 'r') as file:
+        filepath = get_path(filename)
+        with open(filepath, 'r') as file:
             data = json.load(file)
         return cls(**data)
