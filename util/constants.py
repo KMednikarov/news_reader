@@ -1,13 +1,20 @@
 import os
 import sys
+import platform
+
 
 def get_current_directory():
     if getattr(sys, 'frozen', False):
         # Running in a PyInstaller bundle
-        return os.path.dirname(sys.executable)
+        if 'macOS' in platform.platform():
+            print(platform.platform())
+            return os.path.dirname(sys.executable)
+        else:
+            return os.getcwd()
     else:
         # Running as a script
         return os.getcwd()
+
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
 SHORT_DATE_FORMAT = '%Y-%m-%d'
@@ -23,5 +30,3 @@ report_file_path = current_directory + '/reports'
 sources_dir = current_directory + "/sources"
 companies_file_path = current_directory + '/sources/companies_list.xlsx'
 last_scrape_dates_file_path = current_directory + '/sources/previous_scrape_dates.json'
-
-
